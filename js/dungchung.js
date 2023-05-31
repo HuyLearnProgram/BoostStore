@@ -306,12 +306,41 @@ function checkTaiKhoan() {
   }
 }
 
+
+//khoiTao riêng cho trang forgotPass.html
+function khoiTaoForgot() {
+  list_products = getListProducts() || list_products;
+  adminInfo = getListAdmin() || adminInfo;
+
+  capNhat_ThongTin_CurrentUser();
+
+  changeValCode();
+}
+
+//Thay đổi mã xác thực
+function changeValCode() {
+  const valCode = document.getElementsByClassName("validationCodeCont")[0];
+  const valNum = autoValidationNumber();
+  valCode.textContent = valNum;
+}
+
+//khoiTao riêng cho trang changePass.html
+function khoiTaoChange() {
+  list_products = getListProducts() || list_products;
+  adminInfo = getListAdmin() || adminInfo;
+
+  capNhat_ThongTin_CurrentUser();
+}
+
+//Xác thực cho forgot password
 function forgotPass(form) {
   const email = form.email.value;
-  console.log(email);
+  const valCode = +form.validationCode.value;
+  let valContent = document.getElementsByClassName("validationCodeCont")[0];
+  let valCodeCont = +valContent.textContent;
+  console.log(valCodeCont);
   // Lấy dữ liệu từ danh sách người dùng ở localstorage
   const listUser = getListUser();
-  console.log(listUser);
   for (const u of listUser) {
     if (email === u.email) {
       //Nếu tài khoản có property off bằng true thì thông báo bị khóa
@@ -319,10 +348,18 @@ function forgotPass(form) {
         alert("Tài khoản này đang bị khoá. Không thể đăng nhập.");
         return true;
       }
-      alert("Xác thực email thành công!");
-      window.location.replace("changePass.html");
-      window.localStorage.setItem("CurrentEmail", JSON.stringify(email));
-      return false;
+      if (valCode === valCodeCont) {
+        alert("Xác thực email thành công!");
+        window.location.replace("changePass.html");
+        window.localStorage.setItem("CurrentEmail", JSON.stringify(email));
+        return false;
+      } else {
+        alert("Nhập sai mã xác thực");
+        valContent.textContent = autoValidationNumber();
+        valCodeCont = +valContent.textContent;
+        form.validationCode.focus();
+        return false;
+      }
     }
   }
   // Trả về thông báo nếu không khớp
@@ -331,6 +368,15 @@ function forgotPass(form) {
   return false;
 }
 
+//Tạo tự động số có 6 chữ số
+function autoValidationNumber() {
+  const min = Math.ceil(100000);
+  const max = Math.floor(999999);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+
+//Thay đổi mật khẩu người dùng
 function passChange(form) {
   const email = JSON.parse(window.localStorage.getItem("CurrentEmail")); // Lấy dữ liệu từ localstorage
   const pass = form.pass.value;
